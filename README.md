@@ -10,11 +10,11 @@ where my npm?
 ```shell
 npm install github:0xA672/wherenpm.ts #latest main
 ```
-or
+* or
 ```shell
 npm install github:0xA672/wherenpm.ts#main
 ```
-or
+* or
 ```shell
 bun install github:0xA672/wherenpm.ts
 ```
