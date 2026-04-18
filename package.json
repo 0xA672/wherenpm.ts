@@ -12,6 +12,9 @@
   "keywords": ["npm", "prefix", "global", "where", "utils"],
   "author": "0xA672",
   "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },  
   "devDependencies": {
     "@types/node": "^25.6.0",
     "typescript": "^5.0.0"
