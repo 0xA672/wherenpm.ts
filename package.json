@@ -1,23 +1,15 @@
 {
-  "name": "strip.ts",
+  "name": "wherenpm",
   "version": "0.0.1",
-  "description": "Recursively strip empty values from objects and arrays.",
-  "main": "dist/strip.js",
-  "types": "dist/strip.d.ts",
-  "files": [
-    "dist"
-  ],
+  "description": "Get the global npm prefix. Zero dependencies.",
+  "main": "dist/wherenpm.js",
+  "types": "dist/wherenpm.d.ts",
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "keywords": [
-    "strip",
-    "omit",
-    "empty",
-    "object",
-    "utils"
-  ],
+  "keywords": ["npm", "prefix", "global", "where", "utils"],
   "author": "0xA672",
   "license": "MIT",
   "devDependencies": {
