@@ -2,11 +2,12 @@
   "name": "wherenpm",
   "version": "0.0.1",
   "description": "Get the global npm prefix. Zero dependencies.",
-  "main": "src/wherenpm.ts",
-  "types": "src/wherenpm.ts",
-  "files": ["src"],
+  "main": "dist/wherenpm.js",
+  "types": "dist/wherenpm.d.ts",
+  "files": ["dist"],
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "keywords": ["npm", "prefix", "global", "where", "utils"],
   "author": "0xA672",
