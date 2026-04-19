@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 import { homedir } from 'os';
 import { resolve, join, dirname } from 'path';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, realpathSync } from 'fs';
 
 export function getNpmPrefix(): string {
   try {
@@ -19,9 +19,14 @@ export function getNpmPrefix(): string {
 
   const np = fnd();
   if (np) {
-    const gn = resolve(dirname(dirname(np)), 'etc', 'npmrc');
-    const pf = rdp(gn);
-    if (pf) return pf;
+    const builtin = resolve(dirname(dirname(np)), 'npmrc');
+    const pf1 = rdp(builtin);
+    if (pf1) {
+      const globalEtc = resolve(pf1, 'etc', 'npmrc');
+      const pf2 = rdp(globalEtc);
+      if (pf2) return pf2;
+      return pf1;
+    }
   }
 
   const { APPDATA, DESTDIR, OSTYPE } = process.env;
@@ -49,13 +54,18 @@ function fnd(): string | null {
   try {
     const c = process.platform === 'win32' ? 'where npm' : 'which npm';
     const s = execSync(c, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
-    return s.split('\n')[0] || null;
+    const p = s.split('\n')[0];
+    if (p) return realpathSync(p);
   } catch {}
 
   const cp = process.platform === 'win32'
     ? [join(process.env.ProgramFiles || 'C:\\Program Files', 'nodejs', 'npm.cmd'), join(process.env.ProgramFiles || 'C:\\Program Files', 'nodejs', 'npm')]
     : ['/usr/local/bin/npm', '/usr/bin/npm'];
 
-  for (const p of cp) if (existsSync(p)) return p;
+  for (const p of cp) {
+    try {
+      if (existsSync(p)) return realpathSync(p);
+    } catch {}
+  }
   return null;
 }
