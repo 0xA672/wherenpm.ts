@@ -3,18 +3,21 @@ import { homedir } from 'os';
 import { resolve, join, dirname } from 'path';
 import { existsSync, readFileSync, realpathSync } from 'fs';
 
+let _pf: string | null = null;
+
 export function getNpmPrefix(): string {
+  if (_pf) return _pf;
+  if (process.env.PREFIX) return _pf = process.env.PREFIX;
+
   try {
     const p = execSync('npm config get prefix', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
-    if (p) return p;
+    if (p) return _pf = p;
   } catch {}
-
-  if (process.env.PREFIX) return process.env.PREFIX;
 
   const h = homedir();
   if (h) {
     const pf = rdp(resolve(h, '.npmrc'));
-    if (pf) return expand(pf);
+    if (pf) return _pf = expand(pf);
   }
 
   const np = fnd();
@@ -24,7 +27,7 @@ export function getNpmPrefix(): string {
     if (pf1) {
       const globalEtc = resolve(pf1, 'etc', 'npmrc');
       const pf2 = rdp(globalEtc);
-      return expand(pf2 || pf1);
+      return _pf = expand(pf2 || pf1);
     }
   }
 
@@ -32,34 +35,30 @@ export function getNpmPrefix(): string {
   const w = process.platform === 'win32' || OSTYPE === 'msys' || OSTYPE === 'cygwin';
 
   if (w) {
-    return APPDATA ? join(APPDATA, 'npm') : dirname(process.execPath);
+    return _pf = APPDATA ? join(APPDATA, 'npm') : dirname(process.execPath);
   }
 
   let fb = dirname(dirname(process.execPath));
   if (DESTDIR) fb = join(DESTDIR, fb);
-  return fb;
+  return _pf = fb;
 }
 
 function rdp(f: string): string | null {
   try {
     const c = readFileSync(f, 'utf8');
-    let pf: string | null = null;
     const lines = c.split(/\r?\n/);
     for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) continue;
-      const eq = trimmed.indexOf('=');
+      const t = line.trim();
+      if (!t || t.startsWith('#') || t.startsWith(';')) continue;
+      const eq = t.indexOf('=');
       if (eq === -1) continue;
-      let key = trimmed.slice(0, eq).trim();
-      let val = trimmed.slice(eq + 1).trim();
-      const cmt = val.search(/[#;]/);
-      if (cmt !== -1) val = val.slice(0, cmt).trim();
-      if (key === 'prefix') {
-        pf = val.replace(/^['"]|['"]$/g, '');
-        break;
-      }
+      const k = t.slice(0, eq).trim();
+      if (k !== 'prefix') continue;
+      let v = t.slice(eq + 1).trim();
+      const cmt = v.search(/[#;]/);
+      if (cmt !== -1) v = v.slice(0, cmt).trim();
+      return v.replace(/^['"]|['"]$/g, '');
     }
-    return pf;
   } catch {}
   return null;
 }
