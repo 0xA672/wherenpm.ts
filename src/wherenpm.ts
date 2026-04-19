@@ -43,6 +43,10 @@ export function getNpmPrefix(): string {
   return _pf = fb;
 }
 
+export function clear(): void {
+  _pf = null;
+}
+
 function rdp(f: string): string | null {
   try {
     const c = readFileSync(f, 'utf8');
