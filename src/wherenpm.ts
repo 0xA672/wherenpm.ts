@@ -47,6 +47,19 @@ export function clear(): void {
   _pf = null;
 }
 
+export function to(): string {
+  const prefix = getNpmPrefix();
+  if (!prefix) {
+    return 'echo npm prefix not found';
+  }
+
+  if (process.platform === 'win32') {
+    return `cd /d "${prefix.replace(/"/g, '""')}"`;
+  }
+
+  return `cd "${prefix.replace(/"/g, '\\"')}"`;
+}
+
 function rdp(f: string): string | null {
   try {
     const c = readFileSync(f, 'utf8');
