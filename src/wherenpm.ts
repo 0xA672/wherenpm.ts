@@ -35,7 +35,7 @@ export function getNpmPrefix(): string {
   const w = process.platform === 'win32' || OSTYPE === 'msys' || OSTYPE === 'cygwin';
 
   if (w) {
-    return _pf = APPDATA ? join(APPDATA, 'npm') : dirname(process.execPath);
+    return _pf = APPDATA ? join(APPDATA, 'npm') : dirname(process.execPath);//если нигде нету npm, гадаем, где он, по текущей ОС
   }
 
   let fb = dirname(dirname(process.execPath));
