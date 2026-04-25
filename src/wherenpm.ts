@@ -22,13 +22,13 @@ export function getNpmPrefix(): string {
 
   const np = fnd();
   if (np) {
-    const builtin = resolve(dirname(dirname(np)), 'npmrc');
-    const pf1 = rdp(builtin);
-    if (pf1) {
-      const globalEtc = resolve(pf1, 'etc', 'npmrc');
-      const pf2 = rdp(globalEtc);
-      return _pf = expand(pf2 || pf1);
+    const npmRoot = dirname(dirname(np));
+    const globalEtcNpmrc = resolve(npmRoot, 'etc', 'npmrc');
+    const pfFromEtc = rdp(globalEtcNpmrc);
+    if (pfFromEtc) {
+      return _pf = expand(pfFromEtc);
     }
+    return _pf = npmRoot;
   }
 
   const { APPDATA, DESTDIR, OSTYPE } = process.env;
