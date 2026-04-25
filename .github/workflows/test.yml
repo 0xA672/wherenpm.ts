@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
 jobs:
   test-logic:
     runs-on: ubuntu-latest
@@ -16,8 +18,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
