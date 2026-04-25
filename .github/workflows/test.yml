@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -31,17 +33,17 @@ jobs:
           fi
 
       - name: Build project (compile TypeScript)
-        run: npm run build   # 因为你 package.json 里定义了 "build": "tsc"
+        run: npm run build
 
       - name: Verify dist exists
-        run: test -f dist/wherenpm.js   # ← 改成 wherenpm.js
+        run: test -f dist/wherenpm.js
 
       - name: Internal logic verification
         run: |
           export SYSTEM_PREFIX="$(npm config get prefix)"
           export SYSTEM_NPM="$(which npm)"
           node -e "
-            const { getNpmPrefix } = require('./dist/wherenpm.js');   // ← 改成 wherenpm.js
+            const { getNpmPrefix } = require('./dist/wherenpm.js');
             const { resolve } = require('path');
             const { realpathSync, existsSync } = require('fs');
 
@@ -76,3 +78,13 @@ jobs:
 
             console.log('PASS: All internal logic checks passed.');
           "
+
+      - name: Auto-commit dist if changed
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'ci: update dist [skip ci]'
+          file_pattern: 'dist/**'
+          commit_user_name: 'github-actions[bot]'
+          commit_user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_author: 'github-actions[bot] <github-actions[bot]@users.noreply.github.com>'
