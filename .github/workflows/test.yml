@@ -1,4 +1,4 @@
-name: Smoke Test
+name: Internal Logic Test
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  test-logic:
     runs-on: ubuntu-latest
 
     strategy:
@@ -22,21 +22,57 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Verify dist exists
-        run: test -f dist/index.js
-
-      - name: Compare getNpmPrefix with system npm prefix
+      - name: Install dependencies
         run: |
-          SYSTEM_PREFIX=$(npm config get prefix)
-          echo "System reported prefix: $SYSTEM_PREFIX"
-          CODE_PREFIX=$(node -e "
-            const { getNpmPrefix } = require('./dist/index.js');
-            console.log(getNpmPrefix());
-          ")
-          echo "Code returned prefix : $CODE_PREFIX"
-          if [ "$SYSTEM_PREFIX" != "$CODE_PREFIX" ]; then
-            echo "ERROR: prefixes do not match"
-            exit 1
+          if [ -f package-lock.json ]; then
+            npm ci
           else
-            echo "OK: prefixes match"
+            npm install
           fi
+
+      - name: Build project (compile TypeScript)
+        run: npm run build   # 因为你 package.json 里定义了 "build": "tsc"
+
+      - name: Verify dist exists
+        run: test -f dist/wherenpm.js   # ← 改成 wherenpm.js
+
+      - name: Internal logic verification
+        run: |
+          export SYSTEM_PREFIX="$(npm config get prefix)"
+          export SYSTEM_NPM="$(which npm)"
+          node -e "
+            const { getNpmPrefix } = require('./dist/wherenpm.js');   // ← 改成 wherenpm.js
+            const { resolve } = require('path');
+            const { realpathSync, existsSync } = require('fs');
+
+            const prefix = getNpmPrefix();
+            const sysPrefix = process.env.SYSTEM_PREFIX;
+            const sysNpm    = process.env.SYSTEM_NPM;
+
+            console.log('getNpmPrefix():', prefix);
+            console.log('system prefix: ', sysPrefix);
+
+            if (prefix !== sysPrefix) {
+              console.error('FAIL: Prefix mismatch');
+              process.exit(1);
+            }
+
+            const expectedNpm = resolve(prefix, 'bin', 'npm');
+            console.log('Expected npm at:', expectedNpm);
+            if (!existsSync(expectedNpm)) {
+              console.error('FAIL: npm binary not found under prefix');
+              process.exit(1);
+            }
+
+            const realExpected = realpathSync(expectedNpm);
+            const realSystem   = realpathSync(sysNpm);
+            console.log('Real expected npm:', realExpected);
+            console.log('Real system npm :', realSystem);
+
+            if (realExpected !== realSystem) {
+              console.error('FAIL: npm executable path mismatch');
+              process.exit(1);
+            }
+
+            console.log('PASS: All internal logic checks passed.');
+          "
