@@ -27,20 +27,20 @@ function getNpmPrefix() {
     }
     const np = fnd();
     if (np) {
-        const builtin = (0, path_1.resolve)((0, path_1.dirname)((0, path_1.dirname)(np)), 'npmrc');
-        const pf1 = rdp(builtin);
-        if (pf1) {
-            const globalEtc = (0, path_1.resolve)(pf1, 'etc', 'npmrc');
-            const pf2 = rdp(globalEtc);
-            return _pf = expand(pf2 || pf1);
+        const npmRoot = (0, path_1.dirname)((0, path_1.dirname)(np));
+        const globalEtcNpmrc = (0, path_1.resolve)(npmRoot, 'etc', 'npmrc');
+        const pfFromEtc = rdp(globalEtcNpmrc);
+        if (pfFromEtc) {
+            return _pf = expand(pfFromEtc);
         }
+        return _pf = npmRoot;
     }
     const { APPDATA, DESTDIR, OSTYPE } = process.env;
     const w = process.platform === 'win32' || OSTYPE === 'msys' || OSTYPE === 'cygwin';
     if (w) {
-        return _pf = APPDATA ? (0, path_1.join)(APPDATA, 'npm') : (0, path_1.dirname)(process.execPath);
+        return _pf = APPDATA ? (0, path_1.join)(APPDATA, 'npm') : (0, path_1.dirname)(process.execPath); // если нигде нету npm, гадаем, где он, по текущей ОС
     }
-    let fb = (0, path_1.dirname)((0, path_1.dirname)(process.execPath));
+    let fb = (0, path_1.dirname)((0, path_1.dirname)(process.execPath)); // same as above, this is a best-effort guess for Unix
     if (DESTDIR)
         fb = (0, path_1.join)(DESTDIR, fb);
     return _pf = fb;
