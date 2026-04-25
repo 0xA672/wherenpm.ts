@@ -9,11 +9,23 @@ where my npm?
 [![package size](https://img.shields.io/bundlephobia/minzip/wherenpm?label=size)](https://bundlephobia.com/package/wherenpm)
 
 ### Install
-* Using npm:
+#### * Using npm:
 ```shell
 npm install wherenpm
 ```
-* Using Github repo url:
+* or
+```shell
+pnpm add wherenpm
+```
+* or
+```shell
+yarn add wherenpm
+```
+* or
+```shell
+bun add wherenpm
+```
+#### * Using Github repo url:
 ```shell
 npm install github:0xA672/wherenpm.ts #latest main
 ```
@@ -23,7 +35,11 @@ npm install github:0xA672/wherenpm.ts#main
 ```
 * or
 ```shell
-bun install github:0xA672/wherenpm.ts
+bun add github:0xA672/wherenpm.ts
+```
+* or
+```shell
+pnpm add github:0xA672/wherenpm.ts
 ```
 
 ### Usage
